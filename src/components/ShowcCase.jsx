@@ -10,11 +10,10 @@ const ShowcaseContainer = styled.div`
   padding: 0;
   background-color: black;
   flex-wrap: wrap;
-  width: 100vw; /* Full width */
+
   height: 100vh; /* Full height */
 
   @media (max-width: 768px) {
-    flex-direction: column;
     padding: 20px;
   }
 
