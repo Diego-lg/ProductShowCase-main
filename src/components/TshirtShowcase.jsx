@@ -72,7 +72,7 @@ const DisplayScreenshot = ({ screenshot, downloadImage }) => (
   </>
 );
 
-const Scene = ({ triggerScreenshot, setScreenshot }) => {
+const Scene = ({ triggerScreenshot, setScreenshot, fullTextureUrl }) => {
   const textures = useLoader(TextureLoader, [
     "tshirt/fabric_167_ambientocclusion-4K.png",
     "tshirt/fabric_167_basecolor-4K.png",
@@ -106,7 +106,7 @@ const Scene = ({ triggerScreenshot, setScreenshot }) => {
     [textures]
   );
 
-  const fullTexture = useTexture("xamples/014.png");
+  const fullTexture = useTexture(fullTextureUrl);
   const { nodes } = useGLTF("tshirt.glb");
 
   const { gl, scene, camera } = useThree();
@@ -184,6 +184,10 @@ const TshirtShowcase = () => {
     document.body.removeChild(link);
   };
 
+  // Get the image URL from query parameters
+  const queryParams = new URLSearchParams(window.location.search);
+  const imageUrl = queryParams.get("image") || "xamples/014.png"; // Fallback image
+
   return (
     <Canvas>
       <Suspense fallback={null}>
@@ -191,6 +195,7 @@ const TshirtShowcase = () => {
         <Scene
           triggerScreenshot={triggerScreenshot}
           setScreenshot={setScreenshot}
+          fullTextureUrl={imageUrl} // Pass the image URL to Scene
         />
       </Suspense>
     </Canvas>
