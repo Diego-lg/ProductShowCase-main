@@ -10,8 +10,6 @@ const ShowcaseContainer = styled.div`
   padding: 0;
   flex-wrap: wrap;
 
-  height: 100vh; /* Full height */
-
   @media (max-width: 768px) {
     padding: 20px;
   }
