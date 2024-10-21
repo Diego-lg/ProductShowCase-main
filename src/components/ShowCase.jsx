@@ -3,6 +3,11 @@ import "./ShowCase.css";
 import styled from "styled-components";
 import React, { useState } from "react";
 
+const queryParams = new URLSearchParams(window.location.search);
+const imageUrl = queryParams.get("image") || "xamples/014.png"; // Fallback image
+
+
+
 const ShowcaseContainer = styled.div`
   display: flex;
   justify-content: center;
@@ -125,7 +130,7 @@ const AddToCartButton = styled.button`
 `;
 
 const EnhancedTshirtShowcase = styled.div`
-  background-image: url("xamples/014.png");
+  background-image: url(${(props) => props.imageUrl});
   background-color: #ffffff;
   padding: 30px;
   border: 1px solid #ddd;
@@ -143,7 +148,7 @@ const EnhancedTshirtShowcase = styled.div`
   }
 
   @media (max-width: 480px) {
-    padding: 10px; /* Reduced padding for extra small screens */
+    padding: 10px;
     margin-top: 20px;
     width: 100%;
   }
@@ -162,13 +167,17 @@ const ShowCase = () => {
 
   const [selectedSize, setSelectedSize] = useState(null);
 
+  const queryParams = new URLSearchParams(window.location.search);
+  const imageUrl = queryParams.get("image") || product.image; // Use product image as fallback
+
   return (
     <ShowcaseContainer className="font-code transition-colors   ">
-      <EnhancedTshirtShowcase>
+      <EnhancedTshirtShowcase imageUrl={imageUrl}>
         <TshirtShowcase />
       </EnhancedTshirtShowcase>
     </ShowcaseContainer>
   );
 };
+
 
 export default ShowCase;

@@ -173,7 +173,7 @@ const Scene = ({ triggerScreenshot, setScreenshot, fullTextureUrl }) => {
 
 const TshirtShowcase = () => {
   const [screenshot, setScreenshot] = useState(null);
-  const triggerScreenshot = useRef(() => {});
+  const triggerScreenshot = useRef(() => { });
 
   const downloadImage = (imgData) => {
     const link = document.createElement("a");
