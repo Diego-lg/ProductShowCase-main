@@ -144,8 +144,7 @@ const EnhancedTshirtShowcase = styled.div`
   @media (max-width: 768px) {
     padding: 20px;
     width: 100vw;
-    height: 65vw;
-  }
+   }
 
   @media (max-width: 480px) {
     padding: 10px;
