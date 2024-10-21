@@ -16,8 +16,7 @@ const ShowcaseContainer = styled.div`
   flex-wrap: wrap;
 
   @media (max-width: 768px) {
-    padding: 20px;
-  }
+   }
 
   @media (max-width: 480px) {
     padding: 10px;
@@ -143,8 +142,7 @@ const EnhancedTshirtShowcase = styled.div`
 
   @media (max-width: 768px) {
      width: 100vw;
-     padding: 0px;
-
+ 
    }
 
   @media (max-width: 480px) {
