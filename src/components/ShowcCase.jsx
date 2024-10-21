@@ -8,7 +8,6 @@ const ShowcaseContainer = styled.div`
   justify-content: center;
   align-items: center;
   padding: 0;
-  background-color: black;
   flex-wrap: wrap;
 
   height: 100vh; /* Full height */
