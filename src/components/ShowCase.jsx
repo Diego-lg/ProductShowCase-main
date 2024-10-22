@@ -6,8 +6,6 @@ import React, { useState } from "react";
 const queryParams = new URLSearchParams(window.location.search);
 const imageUrl = queryParams.get("image") || "xamples/014.png"; // Fallback image
 
-
-
 const ShowcaseContainer = styled.div`
   display: flex;
   justify-content: center;
@@ -16,7 +14,7 @@ const ShowcaseContainer = styled.div`
   flex-wrap: wrap;
 
   @media (max-width: 768px) {
-   }
+  }
 
   @media (max-width: 480px) {
     padding: 10px;
@@ -131,7 +129,7 @@ const AddToCartButton = styled.button`
 const EnhancedTshirtShowcase = styled.div`
   background-image: url(${(props) => props.imageUrl});
   background-color: #ffffff;
-  padding: 30px;
+  padding: 3%;
   border: 1px solid #ddd;
   border-radius: 15px;
   margin-top: 0px;
@@ -141,9 +139,8 @@ const EnhancedTshirtShowcase = styled.div`
   overflow: hidden;
 
   @media (max-width: 768px) {
-     width: 100vw;
- 
-   }
+    width: 100vw;
+  }
 
   @media (max-width: 480px) {
     padding: 10px;
@@ -176,6 +173,5 @@ const ShowCase = () => {
     </ShowcaseContainer>
   );
 };
-
 
 export default ShowCase;
