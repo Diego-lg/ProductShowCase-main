@@ -133,8 +133,8 @@ const EnhancedTshirtShowcase = styled.div`
   border: 1px solid #ddd;
   border-radius: 15px;
   margin-top: 0px;
-  width: 100%;
-  height: 100%;
+  width: 40vw;
+  height: 40vw;
   box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
   overflow: hidden;
 
