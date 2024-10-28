@@ -6,17 +6,29 @@ import React, {
   useState,
   useEffect,
 } from "react";
-import { Canvas, useLoader, useThree } from "@react-three/fiber";
-import { TextureLoader, MeshStandardMaterial, BackSide } from "three";
+import { Canvas, useLoader, useThree, useFrame } from "@react-three/fiber";
 import {
-  Billboard,
-  Decal,
+  TextureLoader,
+  MeshStandardMaterial,
+  BackSide,
+  Vector3,
+  ClampToEdgeWrapping,
+  RepeatWrapping,
+} from "three";
+import {
   Environment,
+  Lightformer,
+  ContactShadows,
   OrbitControls,
   useGLTF,
   useTexture,
+  Billboard,
+  Decal,
 } from "@react-three/drei";
+import { EffectComposer, SSR, Bloom, LUT } from "@react-three/postprocessing";
+import { LUTCubeLoader } from "postprocessing";
 import { LayerMaterial, Depth } from "lamina";
+import DynamicFerrofluid from "./LoadingFerrofluid";
 
 const Glow = ({ color = "#ff0000", scale = 0.5, near = -2, far = 1.4 }) => (
   <Billboard>
@@ -36,50 +48,14 @@ const Glow = ({ color = "#ff0000", scale = 0.5, near = -2, far = 1.4 }) => (
   </Billboard>
 );
 
-const ScreenshotButton = ({ captureScreenshot }) => (
-  <button
-    style={{ position: "absolute", top: "10px", left: "10px", zIndex: 1 }}
-    onClick={captureScreenshot}
-  >
-    Capture Screenshot
-  </button>
-);
-
-const DownloadButton = ({ screenshot, downloadImage }) => (
-  <button
-    style={{ position: "absolute", top: "10px", left: "120px", zIndex: 1 }}
-    onClick={() => downloadImage(screenshot)}
-  >
-    Download Screenshot
-  </button>
-);
-
-const DisplayScreenshot = ({ screenshot, downloadImage }) => (
-  <>
-    <img
-      src={screenshot}
-      alt="Screenshot"
-      style={{
-        position: "absolute",
-        top: "50px",
-        left: "10px",
-        zIndex: 1,
-        width: "256px",
-        height: "256px",
-      }}
-    />
-    <DownloadButton screenshot={screenshot} downloadImage={downloadImage} />
-  </>
-);
-
-const Scene = ({ triggerScreenshot, setScreenshot, fullTextureUrl }) => {
+const Scene = ({ fullTextureUrl, loading, sliderValue }) => {
   const textures = useLoader(TextureLoader, [
     "tshirt/fabric_167_ambientocclusion-4K.png",
     "tshirt/fabric_167_basecolor-4K.png",
     "tshirt/fabric_167_normal-4K.png",
     "tshirt/fabric_167_roughness-4K.png",
   ]);
-
+  console.log(sliderValue);
   const material = useMemo(
     () =>
       new MeshStandardMaterial({
@@ -87,8 +63,9 @@ const Scene = ({ triggerScreenshot, setScreenshot, fullTextureUrl }) => {
         aoMap: textures[0],
         normalMap: textures[2],
         roughnessMap: textures[3],
-        roughness: 0.5,
-        color: "black",
+        roughness: 0.7,
+        metalness: 0.3,
+        color: "white",
         side: BackSide,
       }),
     [textures]
@@ -101,103 +78,154 @@ const Scene = ({ triggerScreenshot, setScreenshot, fullTextureUrl }) => {
         aoMap: textures[0],
         normalMap: textures[2],
         roughnessMap: textures[3],
-        metalness: 0.5,
+        roughness: 0.5,
+        metalness: 0.7,
       }),
     [textures]
   );
 
   const fullTexture = useTexture(fullTextureUrl);
   const { nodes } = useGLTF("tshirt.glb");
+  const { camera } = useThree();
 
-  const { gl, scene, camera } = useThree();
-
-  // Setup the triggerScreenshot function
   useEffect(() => {
-    if (triggerScreenshot) {
-      triggerScreenshot.current = () => {
-        gl.render(scene, camera);
-        const screenshot = gl.domElement.toDataURL("image/png");
-        setScreenshot(screenshot);
-      };
+    const updateCameraPosition = () => {
+      if (window.innerWidth < 768) {
+        camera.position.set(0, 15, 8);
+      } else {
+        camera.position.set(0, 8, 5);
+      }
+      camera.lookAt(0, 0, 0);
+    };
+
+    updateCameraPosition();
+    window.addEventListener("resize", updateCameraPosition);
+
+    return () => {
+      window.removeEventListener("resize", updateCameraPosition);
+    };
+  }, [camera]);
+
+  // New useEffect to prevent texture repetition
+  useEffect(() => {
+    if (fullTexture) {
+      fullTexture.wrapS = ClampToEdgeWrapping;
+      fullTexture.wrapT = ClampToEdgeWrapping;
+      fullTexture.needsUpdate = true;
     }
-  }, [gl, scene, camera, triggerScreenshot, setScreenshot]);
+  }, [fullTexture]);
 
   return (
     <>
-      <OrbitControls
-        enablePan={false}
-        autoRotate
-        autoRotateSpeed={0.7}
-        minDistance={4}
-        maxDistance={8}
-      />
-      <ambientLight intensity={1.5} />
-      <Environment
-        background
-        files={["px.png", "nx.png", "py.png", "ny.png", "pz.png", "nz.png"]}
-        path="/background/"
-      />
-      <directionalLight
-        position={[0, 10, 1]}
-        intensity={5.5}
-        color="white"
-        castShadow
-      />
-      <mesh
-        castShadow
-        geometry={nodes.T_Shirt_male.geometry}
-        material={material}
-        material-roughness={0.4}
-        material-opacity={1}
-        dispose={null}
-        scale={[10, 10, 10]}
-        position={[0, 0, 0]}
-      >
-        <Decal
-          position={[0, 0, 0]}
-          rotation={[0, 0, 0]}
-          scale={0.7}
-          map={fullTexture}
-          material={material_2}
-          depthTest={true}
-          depthWrite={true}
-          material-opacity={1}
-          material-roughness={0.9}
-          polygonOffset
-          polygonOffsetFactor={-1}
+      <ambientLight intensity={0.5} />
+      <directionalLight position={[5, 10, 5]} intensity={0.7} castShadow />
+      <directionalLight position={[-5, 10, -5]} intensity={0.4} castShadow />
+
+      <Environment resolution={512}>
+        {[...Array(7)].map((_, i) => (
+          <Lightformer
+            key={i}
+            intensity={2.5}
+            rotation-x={Math.PI / 2}
+            position={[0, 4, -9 + i * 3]}
+            scale={[10, 1, 1]}
+          />
+        ))}
+        <Lightformer
+          intensity={2.5}
+          rotation-y={Math.PI / 2}
+          position={[-50, 2, 0]}
+          scale={[100, 2, 1]}
         />
-      </mesh>
+        <Lightformer
+          intensity={2.5}
+          rotation-y={-Math.PI / 2}
+          position={[50, 2, 0]}
+          scale={[100, 2, 1]}
+        />
+        <Lightformer
+          form="ring"
+          color="white"
+          intensity={12}
+          scale={2.5}
+          position={[10, 5, 10]}
+          onUpdate={(self) => self.lookAt(0, 0, 0)}
+        />
+      </Environment>
+
+      {loading ? (
+        <DynamicFerrofluid />
+      ) : (
+        <mesh
+          castShadow
+          receiveShadow
+          geometry={nodes.T_Shirt_male.geometry}
+          material={material}
+          material-roughness={0.5}
+          material-metalness={0.1}
+          dispose={null}
+          scale={[7, 7, 7]}
+          position={[0, 0.5, 0]}
+        >
+          <Decal
+            position={[0, 0, 0]}
+            rotation={[0, 10 - sliderValue / 10, 0]}
+            scale={0.7}
+            map={fullTexture}
+            material={material_2}
+            depthTest={true}
+            depthWrite={true}
+            material-opacity={1}
+            material-roughness={0.9}
+            polygonOffset
+            polygonOffsetFactor={-1}
+          />
+        </mesh>
+      )}
     </>
   );
 };
 
-const TshirtShowcase = () => {
-  const [screenshot, setScreenshot] = useState(null);
-  const triggerScreenshot = useRef(() => { });
-
-  const downloadImage = (imgData) => {
-    const link = document.createElement("a");
-    link.href = imgData;
-    link.download = "screenshot.png";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
-  // Get the image URL from query parameters
-  const queryParams = new URLSearchParams(window.location.search);
-  const imageUrl = queryParams.get("image") || "xamples/014.png"; // Fallback image
+const Effects = () => {
+  const texture = useLoader(LUTCubeLoader, "/F-6800-STD.cube");
 
   return (
-    <Canvas>
+    <EffectComposer>
+      <LUT lut={texture} />
+    </EffectComposer>
+  );
+};
+
+const TshirtShowcase = ({ imageUrl, loading, sliderValue }) => {
+  const fallbackImageUrl = "xamples/013.png";
+
+  return (
+    <Canvas
+      gl={{
+        physicallyCorrectLights: true,
+        toneMappingExposure: 1.5,
+        antialias: true,
+        alpha: false,
+      }}
+      dpr={[1, 2]}
+      camera={{ position: [0, 0, 15], fov: 35 }}
+    >
+      <color attach="background" args={["black"]} />
       <Suspense fallback={null}>
         <Glow scale={1.2} near={-25} />
         <Scene
-          triggerScreenshot={triggerScreenshot}
-          setScreenshot={setScreenshot}
-          fullTextureUrl={imageUrl} // Pass the image URL to Scene
+          fullTextureUrl={imageUrl || fallbackImageUrl}
+          loading={loading}
+          sliderValue={sliderValue}
         />
+        <Effects />
       </Suspense>
+      <OrbitControls
+        enablePan={false}
+        enableZoom={false}
+        minPolarAngle={Math.PI / 2.2}
+        maxPolarAngle={Math.PI / 2.2}
+      />
     </Canvas>
   );
 };

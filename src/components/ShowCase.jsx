@@ -1,175 +1,264 @@
-import TshirtShowcase from "./TshirtShowcase";
-import "./ShowCase.css";
-import styled from "styled-components";
 import React, { useState } from "react";
+import styled from "styled-components";
+import TshirtShowcase from "./TshirtShowcase";
 
-const queryParams = new URLSearchParams(window.location.search);
-const imageUrl = queryParams.get("image") || "xamples/014.png"; // Fallback image
-
-const ShowcaseContainer = styled.div`
+const PopupOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 0;
-  flex-wrap: wrap;
-
-  @media (max-width: 768px) {
-  }
-
-  @media (max-width: 480px) {
-    padding: 10px;
-  }
-`;
-const ProductImage = styled.img`
-  width: 40%;
-  height: auto;
-  margin-right: 60px;
-  margin-top: 20px;
-
-  @media (max-width: 768px) {
-    width: 100%;
-    margin-right: 0;
-    margin-bottom: 20px;
-  }
+  z-index: 1000;
 `;
 
-const ProductDetails = styled.div`
-  width: 50%;
-  margin-top: 20px;
-
-  @media (max-width: 768px) {
-    width: 100%;
-  }
-`;
-
-const ProductName = styled.h2`
-  font-size: 28px;
-  margin-bottom: 20px;
-
-  @media (max-width: 768px) {
-    font-size: 24px;
-  }
-
-  @media (max-width: 480px) {
-    font-size: 20px;
-  }
-`;
-
-const ProductPrice = styled.p`
-  font-size: 20px;
-  margin-bottom: 25px;
-
-  @media (max-width: 768px) {
-    font-size: 18px;
-  }
-
-  @media (max-width: 480px) {
-    font-size: 16px;
-  }
-`;
-
-const ProductDescription = styled.p`
-  margin-bottom: 30px;
-  line-height: 1.6;
-`;
-
-const SizeSelector = styled.div`
-  margin-bottom: 30px;
-`;
-
-const SizeBubbleContainer = styled.div`
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap; /* Allow wrapping of size options */
-`;
-
-const SizeBubble = styled.button`
-  padding: 10px 20px;
-  border: 1px solid #ccc;
-  border-radius: 50px;
+const Popup = styled.div`
+  border-radius: 12px;
   background-color: black;
-  color: white;
-  cursor: pointer;
-  font-size: 16px;
-  transition: background-color 0.3s;
-
-  &.selected {
-    background-color: #007bff;
-    border-color: #007bff;
-  }
-
-  &:hover,
-  &:focus {
-    background-color: #007bff;
-    border-color: #007bff;
-  }
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  display: flex;
+  transform: translateY(-70%);
 `;
 
-const AddToCartButton = styled.button`
-  padding: 12px 24px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 18px;
-  transition: background-color 0.2s;
-
-  &:hover,
-  &:focus {
-    background-color: #0056b3;
-  }
-
-  @media (max-width: 480px) {
-    font-size: 16px;
-    padding: 10px 20px;
-  }
+const ShowcaseContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: linear-gradient(135deg, #1a1a1a 0%, #000000 100%);
+  color: #fff;
+  font-family: "Inter", sans-serif;
 `;
 
-const EnhancedTshirtShowcase = styled.div`
-  background-image: url(${(props) => props.imageUrl});
-  background-color: #ffffff;
-  padding: 3%;
-  border: 1px solid #ddd;
-  border-radius: 15px;
-  margin-top: 0px;
-  width: 40vw;
-  height: 40vw;
-  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
+const ControlPanel = styled.div`
+  position: fixed;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  z-index: 10;
+  gap: 1.5rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 
   @media (max-width: 768px) {
-    width: 100vw;
+    flex-direction: column;
+    align-items: stretch;
+    width: 90%;
+    padding: 1.5rem;
+    gap: 1rem;
   }
 
-  @media (max-width: 480px) {
-    padding: 10px;
-    margin-top: 20px;
-    width: 100%;
+  input[type="range"] {
+    -webkit-appearance: none;
+    width: 150px;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+    outline: none;
+
+    &::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 20px;
+      height: 20px;
+      background: #ffffff;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &:hover {
+        transform: scale(1.1);
+      }
+    }
+
+    @media (max-width: 768px) {
+      width: 100%;
+    }
   }
+
+  .buttons {
+    display: flex;
+    gap: 0.75rem;
+
+    @media (max-width: 768px) {
+      justify-content: space-between;
+    }
+  }
+
+  .input-section {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+
+    @media (max-width: 768px) {
+      flex-direction: column;
+      align-items: stretch;
+    }
+  }
+`;
+
+const StyledButton = styled.button`
+  padding: 0.75rem 1.25rem;
+  font-size: 14px;
+  color: #fff;
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  @media (max-width: 768px) {
+    flex: 1;
+  }
+`;
+
+const Input = styled.input`
+  padding: 0.75rem 1rem;
+  width: 200px;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+
+  &::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+  }
+
+  &:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.5);
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1);
+  }
+
+  @media (max-width: 768px) {
+    width: 100%;
+    padding: 0.75rem 0rem;
+  }
+`;
+
+const SubmitButton = styled(StyledButton)`
+  background-color: rgba(255, 255, 255, 0.2);
+  font-weight: 600;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+`;
+
+const ErrorMessage = styled.p`
+  color: #ff6b6b;
+  text-align: center;
+  margin-top: 1rem;
+  font-size: 14px;
 `;
 
 const ShowCase = () => {
-  const product = {
-    id: 1,
-    name: "Stylish T-Shirt",
-    price: 30,
-    description:
-      "This is a high-quality t-shirt with a modern design. The soft and breathable fabric ensures all-day comfort. Available in multiple sizes to fit your style.",
-    image: "xamples/014.png",
-    sizes: ["S", "M", "L", "XL"],
+  const [sliderValue, setSliderValue] = useState(50); // Initialize slider value
+  const [textInput, setTextInput] = useState("");
+  const [imageUrl, setImageUrl] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const openPopup = () => setIsPopupOpen(true);
+  const closePopup = () => setIsPopupOpen(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    setImageUrl(null);
+
+    try {
+      const response = await fetch("http://localhost:5000/generate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ input: textInput }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+
+      const blob = await response.blob();
+      const imgUrl = URL.createObjectURL(blob);
+      setImageUrl(imgUrl);
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const [selectedSize, setSelectedSize] = useState(null);
-
-  const queryParams = new URLSearchParams(window.location.search);
-  const imageUrl = queryParams.get("image") || product.image; // Use product image as fallback
-
   return (
-    <ShowcaseContainer className="font-code transition-colors   ">
-      <EnhancedTshirtShowcase imageUrl={imageUrl}>
-        <TshirtShowcase />
-      </EnhancedTshirtShowcase>
+    <ShowcaseContainer>
+      <TshirtShowcase
+        imageUrl={imageUrl}
+        loading={loading}
+        sliderValue={sliderValue}
+      />
+
+      <ControlPanel>
+        <input
+          type="range"
+          value={sliderValue}
+          onChange={(e) => setSliderValue(parseInt(e.target.value))}
+          min="0"
+          max="100"
+          aria-label="Adjust design size"
+        />
+        <div className="buttons">
+          <StyledButton onClick={openPopup}>Open Popup</StyledButton>
+          <StyledButton>Size</StyledButton>
+        </div>
+        <div className="input-section">
+          <Input
+            type="text"
+            value={textInput}
+            onChange={(e) => setTextInput(e.target.value)}
+            placeholder="Customize text..."
+            aria-label="Customize text"
+          />
+          <SubmitButton onClick={handleSubmit} disabled={loading}>
+            {loading ? "Generating..." : "Apply"}
+          </SubmitButton>
+        </div>
+        {isPopupOpen && (
+          <PopupOverlay>
+            <Popup>
+              <StyledButton onClick={closePopup}>Rotate X</StyledButton>
+              <StyledButton onClick={closePopup}>Rotate Y</StyledButton>
+              <StyledButton onClick={closePopup}>Rotate Z</StyledButton>
+            </Popup>
+          </PopupOverlay>
+        )}
+      </ControlPanel>
+      {error && <ErrorMessage role="alert">{error}</ErrorMessage>}
     </ShowcaseContainer>
   );
 };
