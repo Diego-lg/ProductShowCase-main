@@ -7,17 +7,12 @@ const ShowcaseContainer = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 60px;
-  background-color: black;
   flex-wrap: wrap;
 
   @media (max-width: 768px) {
-    flex-direction: column;
-    padding: 20px;
   }
 
   @media (max-width: 480px) {
-    padding: 10px; /* Reduced padding for extra small screens */
   }
 `;
 
@@ -30,7 +25,6 @@ const ProductImage = styled.img`
   @media (max-width: 768px) {
     width: 100%;
     margin-right: 0;
-    margin-bottom: 20px;
   }
 `;
 
