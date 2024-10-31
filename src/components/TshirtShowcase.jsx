@@ -169,7 +169,7 @@ const Scene = ({ fullTextureUrl, loading, sliderValue }) => {
         >
           <Decal
             position={[0, 0, 0]}
-            rotation={[0, 10 - sliderValue / 10, 0]}
+            rotation={[0, 5 - sliderValue / 10, 0]}
             scale={0.7}
             map={fullTexture}
             material={material_2}
@@ -197,12 +197,10 @@ const Effects = () => {
 };
 
 const TshirtShowcase = ({ imageUrl, loading, sliderValue }) => {
-  const fallbackImageUrl = "xamples/013.png";
-
   // Get the image URL from query parameters
   const queryParams = new URLSearchParams(window.location.search);
   const imageurl_shopify =
-    imageUrl || queryParams.get("image") || "xamples/014.png"; // Fallback image
+    imageUrl || queryParams.get("image") || "xamples/010.png"; // Fallback image
 
   return (
     <Canvas
