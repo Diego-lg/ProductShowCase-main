@@ -135,6 +135,8 @@ const EnhancedTshirtShowcase = styled.div`
   height: 80vh;
   box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
   overflow: hidden;
+  background-size: cover;
+  background-position: center;
 
   @media (max-width: 768px) {
     padding: 20px;
@@ -143,7 +145,7 @@ const EnhancedTshirtShowcase = styled.div`
   }
 
   @media (max-width: 480px) {
-    padding: 10px; /* Reduced padding for extra small screens */
+    padding: 10px;
     margin-top: 20px;
     width: 100%;
   }
