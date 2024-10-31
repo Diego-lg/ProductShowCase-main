@@ -152,7 +152,11 @@ const Scene = ({ fullTextureUrl, loading, sliderValue }) => {
           onUpdate={(self) => self.lookAt(0, 0, 0)}
         />
       </Environment>
-
+      <Environment
+        background
+        files={["px.png", "nx.png", "py.png", "ny.png", "pz.png", "nz.png"]}
+        path="/background/"
+      />
       {loading ? (
         <DynamicFerrofluid />
       ) : (
