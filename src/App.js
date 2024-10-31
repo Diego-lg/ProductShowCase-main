@@ -10,7 +10,7 @@ function App() {
     <Router>
       <div className="App">
         <Routes>
-          <Route path="/" element={<ShowCase />} />
+          <Route path="/" element={<Cuadro />} />
 
           <Route path="/showcase" element={<ShowCase />} />
           <Route path="/cuadro" element={<Cuadro />} />
