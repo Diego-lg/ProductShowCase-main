@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import styled from "styled-components";
 import TshirtShowcase from "./TshirtShowcase";
-
 const PopupOverlay = styled.div`
   position: fixed;
   top: 0;
@@ -222,7 +221,6 @@ const ShowCase = () => {
         loading={loading}
         sliderValue={sliderValue}
       />
-
       <ControlPanel>
         <input
           type="range"
