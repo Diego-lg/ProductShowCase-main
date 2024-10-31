@@ -199,6 +199,11 @@ const Effects = () => {
 const TshirtShowcase = ({ imageUrl, loading, sliderValue }) => {
   const fallbackImageUrl = "xamples/013.png";
 
+  // Get the image URL from query parameters
+  const queryParams = new URLSearchParams(window.location.search);
+  const imageurl_shopify =
+    imageUrl || queryParams.get("image") || "xamples/014.png"; // Fallback image
+
   return (
     <Canvas
       gl={{
@@ -214,7 +219,7 @@ const TshirtShowcase = ({ imageUrl, loading, sliderValue }) => {
       <Suspense fallback={null}>
         <Glow scale={1.2} near={-25} />
         <Scene
-          fullTextureUrl={imageUrl || fallbackImageUrl}
+          fullTextureUrl={imageurl_shopify}
           loading={loading}
           sliderValue={sliderValue}
         />

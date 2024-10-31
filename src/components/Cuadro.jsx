@@ -3,6 +3,9 @@ import "./ShowCase.css";
 import styled from "styled-components";
 import React, { useState } from "react";
 
+const queryParams = new URLSearchParams(window.location.search);
+const imageUrl = queryParams.get("image") || "xamples/014.png"; // Fallback image
+
 const ShowcaseContainer = styled.div`
   display: flex;
   justify-content: space-between;
@@ -158,11 +161,17 @@ const Cuadro = () => {
   };
 
   const [selectedSize, setSelectedSize] = useState(null);
-
+  const imageUrl = queryParams.get("image") || product.image; // Use product image as fallback
+  const [sliderValue, setSliderValue] = useState(50); // Initialize slider value
+  const [loading, setLoading] = useState(false);
   return (
     <ShowcaseContainer className="font-code transition-colors   ">
-      <EnhancedTshirtShowcase>
-        <TshirtShowcase />
+      <EnhancedTshirtShowcase imageUrl={imageUrl}>
+        <TshirtShowcase
+          imageUrl={imageUrl}
+          loading={loading}
+          sliderValue={sliderValue}
+        />
       </EnhancedTshirtShowcase>
     </ShowcaseContainer>
   );
