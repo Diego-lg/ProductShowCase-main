@@ -209,15 +209,4 @@ export default function CoolMonochromeBlackHole() {
       canvas.removeEventListener("click", handleClick);
     };
   }, []);
-
-  return (
-    <div className="relative w-full h-screen bg-black overflow-hidden">
-      <canvas ref={canvasRef} className="absolute inset-0" />
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-        <p className="text-white text-xl font-bold bg-black bg-opacity-50 p-2 rounded">
-          Click to add particles
-        </p>
-      </div>
-    </div>
-  );
 }

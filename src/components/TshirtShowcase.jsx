@@ -117,7 +117,7 @@ const Scene = ({ fullTextureUrl, loading, sliderValue }) => {
 
   return (
     <>
-      <ambientLight intensity={0.5} />
+      <ambientLight intensity={2.5} />
       <directionalLight position={[5, 10, 5]} intensity={0.7} castShadow />
       <directionalLight position={[-5, 10, -5]} intensity={0.4} castShadow />
 
@@ -204,7 +204,7 @@ const TshirtShowcase = ({ imageUrl, loading, sliderValue }) => {
   // Get the image URL from query parameters
   const queryParams = new URLSearchParams(window.location.search);
   const imageurl_shopify =
-    imageUrl || queryParams.get("image") || "xamples/010.png"; // Fallback image
+    imageUrl || queryParams.get("image") || "xamples/007.png"; // Fallback image
 
   return (
     <Canvas
