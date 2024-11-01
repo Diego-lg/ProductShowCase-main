@@ -2,18 +2,14 @@ import React, {
   memo,
   Suspense,
   useMemo,
-  useRef,
-  useState,
-  useEffect,
+  useEffect, useRef,
 } from "react";
 import { Canvas, useLoader, useThree, useFrame } from "@react-three/fiber";
 import {
   TextureLoader,
   MeshStandardMaterial,
   BackSide,
-  Vector3,
-  ClampToEdgeWrapping,
-  RepeatWrapping,
+  ClampToEdgeWrapping, BoxGeometry, Float32BufferAttribute, PointsMaterial
 } from "three";
 import {
   Environment,
@@ -22,31 +18,13 @@ import {
   OrbitControls,
   useGLTF,
   useTexture,
-  Billboard,
   Decal,
+  Reflector,
 } from "@react-three/drei";
-import { EffectComposer, SSR, Bloom, LUT } from "@react-three/postprocessing";
-import { LUTCubeLoader } from "postprocessing";
-import { LayerMaterial, Depth } from "lamina";
 import DynamicFerrofluid from "./LoadingFerrofluid";
+import { LineSegments } from "three";
+import { Edges } from "@react-three/drei";
 
-const Glow = ({ color = "#ff0000", scale = 0.5, near = -2, far = 1.4 }) => (
-  <Billboard>
-    <mesh>
-      <LayerMaterial transparent depthWrite={false}>
-        <Depth
-          colorA={color}
-          colorB="red"
-          alpha={1}
-          mode="normal"
-          near={near * scale}
-          far={far * scale}
-          origin={[0, 0, 0]}
-        />
-      </LayerMaterial>
-    </mesh>
-  </Billboard>
-);
 
 const Scene = ({ fullTextureUrl, loading, sliderValue }) => {
   const textures = useLoader(TextureLoader, [
@@ -55,7 +33,7 @@ const Scene = ({ fullTextureUrl, loading, sliderValue }) => {
     "tshirt/fabric_167_normal-4K.png",
     "tshirt/fabric_167_roughness-4K.png",
   ]);
-  console.log(sliderValue);
+
   const material = useMemo(
     () =>
       new MeshStandardMaterial({
@@ -106,7 +84,6 @@ const Scene = ({ fullTextureUrl, loading, sliderValue }) => {
     };
   }, [camera]);
 
-  // New useEffect to prevent texture repetition
   useEffect(() => {
     if (fullTexture) {
       fullTexture.wrapS = ClampToEdgeWrapping;
@@ -114,49 +91,31 @@ const Scene = ({ fullTextureUrl, loading, sliderValue }) => {
       fullTexture.needsUpdate = true;
     }
   }, [fullTexture]);
+  // Custom animated wireframe cube component
+  const AnimatedWireframeCube = () => {
+    const meshRef = useRef();
 
+    useFrame(({ clock }) => {
+      const time = clock.getElapsedTime();
+      const scale = 15; // Adjust scale as needed
+      const positionOffset = Math.sin(time * 2) * 0.5; // Adjust speed and amplitude of the wave
+
+      // Update the scale or position to create the fluid effect
+      meshRef.current.scale.set(scale + positionOffset, scale + positionOffset, scale + positionOffset);
+    });
+
+    return (
+      <mesh ref={meshRef} scale={[15, 15, 15]} position={[0, 0.5, 0]}>
+        <boxGeometry args={[1, 1, 1]} />
+        <meshBasicMaterial color="cyan" wireframe opacity={0.4} transparent />
+        <Edges threshold={15} color="cyan" />
+      </mesh>
+    );
+  };
   return (
     <>
-      <ambientLight intensity={2.5} />
-      <directionalLight position={[5, 10, 5]} intensity={0.7} castShadow />
-      <directionalLight position={[-5, 10, -5]} intensity={0.4} castShadow />
 
-      <Environment resolution={512}>
-        {[...Array(7)].map((_, i) => (
-          <Lightformer
-            key={i}
-            intensity={2.5}
-            rotation-x={Math.PI / 2}
-            position={[0, 4, -9 + i * 3]}
-            scale={[10, 1, 1]}
-          />
-        ))}
-        <Lightformer
-          intensity={2.5}
-          rotation-y={Math.PI / 2}
-          position={[-50, 2, 0]}
-          scale={[100, 2, 1]}
-        />
-        <Lightformer
-          intensity={2.5}
-          rotation-y={-Math.PI / 2}
-          position={[50, 2, 0]}
-          scale={[100, 2, 1]}
-        />
-        <Lightformer
-          form="ring"
-          color="white"
-          intensity={12}
-          scale={2.5}
-          position={[10, 5, 10]}
-          onUpdate={(self) => self.lookAt(0, 0, 0)}
-        />
-      </Environment>
-      <Environment
-        background
-        files={["px.png", "nx.png", "py.png", "ny.png", "pz.png", "nz.png"]}
-        path="/background/"
-      />
+
       {loading ? (
         <DynamicFerrofluid />
       ) : (
@@ -165,10 +124,7 @@ const Scene = ({ fullTextureUrl, loading, sliderValue }) => {
           receiveShadow
           geometry={nodes.T_Shirt_male.geometry}
           material={material}
-          material-roughness={0.5}
-          material-metalness={0.1}
-          dispose={null}
-          scale={[7, 7, 7]}
+          scale={[13, 13, 13]}
           position={[0, 0.5, 0]}
         >
           <Decal
@@ -179,32 +135,29 @@ const Scene = ({ fullTextureUrl, loading, sliderValue }) => {
             material={material_2}
             depthTest={true}
             depthWrite={true}
-            material-opacity={1}
-            material-roughness={0.9}
-            polygonOffset
-            polygonOffsetFactor={-1}
           />
         </mesh>
+
       )}
+      {/* Wireframe Cube surrounding the model */}
+      <AnimatedWireframeCube />
+
+      {/* <ContactShadows
+        position={[0, -1.6, 0]}
+        scale={10}
+        blur={1.5}
+        opacity={0.7}
+        far={5}
+      /> */}
     </>
   );
 };
 
-const Effects = () => {
-  const texture = useLoader(LUTCubeLoader, "/F-6800-STD.cube");
-
-  return (
-    <EffectComposer>
-      <LUT lut={texture} />
-    </EffectComposer>
-  );
-};
 
 const TshirtShowcase = ({ imageUrl, loading, sliderValue }) => {
-  // Get the image URL from query parameters
   const queryParams = new URLSearchParams(window.location.search);
   const imageurl_shopify =
-    imageUrl || queryParams.get("image") || "xamples/007.png"; // Fallback image
+    imageUrl || queryParams.get("image") || "xamples/007.png";
 
   return (
     <Canvas
@@ -214,25 +167,24 @@ const TshirtShowcase = ({ imageUrl, loading, sliderValue }) => {
         antialias: true,
         alpha: false,
       }}
-      dpr={[1, 2]}
-      camera={{ position: [0, 0, 15], fov: 35 }}
     >
-      <color attach="background" args={["black"]} />
       <Suspense fallback={null}>
-        <Glow scale={1.2} near={-25} />
+        {/* <Environment preset="forest"
+          background={true}
+
+        /> */}
+
+
         <Scene
+
           fullTextureUrl={imageurl_shopify}
           loading={loading}
           sliderValue={sliderValue}
         />
-        <Effects />
       </Suspense>
-      <OrbitControls
-        enablePan={false}
-        enableZoom={false}
-        minPolarAngle={Math.PI / 2.2}
-        maxPolarAngle={Math.PI / 2.2}
-      />
+      <OrbitControls enablePan={false} enableZoom={false} minPolarAngle={Math.PI / 2.2} maxPolarAngle={Math.PI / 2.2} />
+      <ambientLight intensity={0.8} />
+      <directionalLight position={[5, 10, 5]} intensity={1.2} castShadow />
     </Canvas>
   );
 };
