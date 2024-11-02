@@ -175,7 +175,7 @@ const ErrorMessage = styled.p`
 `;
 
 const ShowCase = () => {
-  const [sliderValue, setSliderValue] = useState(0); // Initialize slider value
+  const [sliderValue, setSliderValue] = useState(50); // Initialize slider value
   const [textInput, setTextInput] = useState("");
   const [imageUrl, setImageUrl] = useState(null);
   const [loading, setLoading] = useState(false);
