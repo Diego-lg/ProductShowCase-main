@@ -17,7 +17,7 @@ const ImageGenerator = () => {
     setImageSrc(null);
 
     try {
-      const response = await fetch("http://localhost:5000/generate", {
+      const response = await fetch("https://ab55b84c1176ef.lhr.life/generate", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
