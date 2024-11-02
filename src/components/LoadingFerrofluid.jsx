@@ -198,7 +198,7 @@ function DynamicFerrofluid() {
         object={ferrofluidMaterial}
         attach="material"
         color="#000033"
-        scale={1.5}
+        scale={3}
       />
     </mesh>
   );

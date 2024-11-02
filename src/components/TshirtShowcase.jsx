@@ -91,27 +91,7 @@ const Scene = ({ fullTextureUrl, loading, sliderValue }) => {
       fullTexture.needsUpdate = true;
     }
   }, [fullTexture]);
-  // Custom animated wireframe cube component
-  const AnimatedWireframeCube = () => {
-    const meshRef = useRef();
 
-    useFrame(({ clock }) => {
-      const time = clock.getElapsedTime();
-      const scale = 15; // Adjust scale as needed
-      const positionOffset = Math.sin(time * 2) * 0.5; // Adjust speed and amplitude of the wave
-
-      // Update the scale or position to create the fluid effect
-      meshRef.current.scale.set(scale + positionOffset, scale + positionOffset, scale + positionOffset);
-    });
-
-    return (
-      <mesh ref={meshRef} scale={[15, 15, 15]} position={[0, 0.5, 0]}>
-        <boxGeometry args={[1, 1, 1]} />
-        <meshBasicMaterial color="cyan" wireframe opacity={0.4} transparent />
-        <Edges threshold={15} color="cyan" />
-      </mesh>
-    );
-  };
   return (
     <>
 
@@ -140,7 +120,6 @@ const Scene = ({ fullTextureUrl, loading, sliderValue }) => {
 
       )}
       {/* Wireframe Cube surrounding the model */}
-      <AnimatedWireframeCube />
 
       {/* <ContactShadows
         position={[0, -1.6, 0]}
@@ -169,11 +148,11 @@ const TshirtShowcase = ({ imageUrl, loading, sliderValue }) => {
       }}
     >
       <Suspense fallback={null}>
-        {/* <Environment preset="forest"
-          background={true}
-
-        /> */}
-
+        <Environment
+          background
+          files={["px.png", "nx.png", "py.png", "ny.png", "pz.png", "nz.png"]}
+          path="/background/"
+        />
 
         <Scene
 
