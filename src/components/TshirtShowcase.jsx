@@ -1,15 +1,15 @@
-import React, {
-  memo,
-  Suspense,
-  useMemo,
-  useEffect, useRef,
-} from "react";
+import React, { memo, Suspense, useMemo, useEffect, useRef } from "react";
 import { Canvas, useLoader, useThree, useFrame } from "@react-three/fiber";
 import {
   TextureLoader,
   MeshStandardMaterial,
   BackSide,
-  ClampToEdgeWrapping, BoxGeometry, Float32BufferAttribute, PointsMaterial
+  ClampToEdgeWrapping,
+  BoxGeometry,
+  Float32BufferAttribute,
+  PointsMaterial,
+  LinearFilter,
+  MathUtils,
 } from "three";
 import {
   Environment,
@@ -25,7 +25,6 @@ import DynamicFerrofluid from "./LoadingFerrofluid";
 import { LineSegments } from "three";
 import { Edges } from "@react-three/drei";
 
-
 const Scene = ({ fullTextureUrl, loading, sliderValue }) => {
   const textures = useLoader(TextureLoader, [
     "tshirt/fabric_167_ambientocclusion-4K.png",
@@ -33,18 +32,17 @@ const Scene = ({ fullTextureUrl, loading, sliderValue }) => {
     "tshirt/fabric_167_normal-4K.png",
     "tshirt/fabric_167_roughness-4K.png",
   ]);
-
+  const fullTexture = useTexture(fullTextureUrl);
   const material = useMemo(
     () =>
       new MeshStandardMaterial({
-        map: textures[1],
+        map: fullTexture,
         aoMap: textures[0],
         normalMap: textures[2],
         roughnessMap: textures[3],
         roughness: 0.7,
         metalness: 0.3,
         color: "white",
-        side: BackSide,
       }),
     [textures]
   );
@@ -62,8 +60,9 @@ const Scene = ({ fullTextureUrl, loading, sliderValue }) => {
     [textures]
   );
 
-  const fullTexture = useTexture(fullTextureUrl);
-  const { nodes } = useGLTF("tshirt.glb");
+  const { nodes } = useGLTF("tshirt.glb", true, (error) =>
+    console.error(error)
+  );
   const { camera } = useThree();
 
   useEffect(() => {
@@ -88,14 +87,29 @@ const Scene = ({ fullTextureUrl, loading, sliderValue }) => {
     if (fullTexture) {
       fullTexture.wrapS = ClampToEdgeWrapping;
       fullTexture.wrapT = ClampToEdgeWrapping;
+      fullTexture.minFilter = LinearFilter;
+      fullTexture.magFilter = LinearFilter;
       fullTexture.needsUpdate = true;
     }
   }, [fullTexture]);
+  // Convert slider value (degrees) to radians for rotation
+  const rotationInRadians = MathUtils.degToRad(sliderValue - 180);
 
+  // Set the center of rotation based on your texture's actual center
+  // These values should be adjusted based on the UV mapping
+  const textureCenterX = 0.38; // Adjust if necessary
+  const textureCenterY = 0.4; // Adjust if necessary
+
+  // Set the center of rotation to the middle of the texture
+  fullTexture.center.set(textureCenterX, textureCenterY);
+
+  // Update the texture's rotation
+  fullTexture.rotation = rotationInRadians;
+
+  // Mark the texture for update to apply changes
+  fullTexture.needsUpdate = true;
   return (
     <>
-
-
       {loading ? (
         <DynamicFerrofluid />
       ) : (
@@ -106,18 +120,8 @@ const Scene = ({ fullTextureUrl, loading, sliderValue }) => {
           material={material}
           scale={[13, 13, 13]}
           position={[0, 0.5, 0]}
-        >
-          <Decal
-            position={[0, 0, 0]}
-            rotation={[0, 5 - sliderValue / 10, 0]}
-            scale={0.7}
-            map={fullTexture}
-            material={material_2}
-            depthTest={true}
-            depthWrite={true}
-          />
-        </mesh>
-
+          map={fullTexture}
+        ></mesh>
       )}
       {/* Wireframe Cube surrounding the model */}
 
@@ -132,11 +136,10 @@ const Scene = ({ fullTextureUrl, loading, sliderValue }) => {
   );
 };
 
-
 const TshirtShowcase = ({ imageUrl, loading, sliderValue }) => {
   const queryParams = new URLSearchParams(window.location.search);
   const imageurl_shopify =
-    imageUrl || queryParams.get("image") || "xamples/007.png";
+    imageUrl || queryParams.get("image") || "xamples/za.jpg";
 
   return (
     <Canvas
@@ -155,15 +158,20 @@ const TshirtShowcase = ({ imageUrl, loading, sliderValue }) => {
         />
 
         <Scene
-
           fullTextureUrl={imageurl_shopify}
           loading={loading}
           sliderValue={sliderValue}
         />
       </Suspense>
-      <OrbitControls enablePan={false} enableZoom={false} minPolarAngle={Math.PI / 2.2} maxPolarAngle={Math.PI / 2.2} />
+      <OrbitControls
+        enablePan={false}
+        enableZoom={false}
+        minPolarAngle={Math.PI / 2.2}
+        maxPolarAngle={Math.PI / 2.2}
+      />
       <ambientLight intensity={0.8} />
-      <directionalLight position={[5, 10, 5]} intensity={1.2} castShadow />
+      <directionalLight position={[1, 1, 1]} intensity={0.8} castShadow />
+      <directionalLight position={[-1, -1, -1]} intensity={0.4} />{" "}
     </Canvas>
   );
 };
