@@ -175,11 +175,18 @@ const ErrorMessage = styled.p`
 `;
 
 const ShowCase = () => {
-  const [sliderValue, setSliderValue] = useState(50); // Initialize slider value
+  const [sliderValue, setSliderValue] = useState({ x: 0, y: 0 });
   const [textInput, setTextInput] = useState("");
   const [imageUrl, setImageUrl] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const handleXChange = (newXValue) => {
+    setSliderValue((prev) => ({ ...prev, x: newXValue }));
+  }; // Function to update the y value
+  const handleYChange = (newYValue) => {
+    setSliderValue((prev) => ({ ...prev, y: newYValue }));
+  };
+  const textureOffset = `${sliderValue.x}:${sliderValue.y}`;
 
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const openPopup = () => setIsPopupOpen(true);
@@ -224,10 +231,11 @@ const ShowCase = () => {
       <ControlPanel>
         <input
           type="range"
-          value={sliderValue}
-          onChange={(e) => setSliderValue(parseInt(e.target.value))}
+          value={sliderValue.x}
+          onChange={(e) => handleXChange(e.target.value)}
           min="0"
-          max="100"
+          max="1"
+          step="0.01"
           aria-label="Adjust design size"
         />
         <div className="buttons">

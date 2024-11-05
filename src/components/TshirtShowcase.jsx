@@ -1,4 +1,11 @@
-import React, { memo, Suspense, useMemo, useEffect, useRef } from "react";
+import React, {
+  memo,
+  Suspense,
+  useMemo,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { Canvas, useLoader, useThree, useFrame } from "@react-three/fiber";
 import {
   TextureLoader,
@@ -10,6 +17,8 @@ import {
   PointsMaterial,
   LinearFilter,
   MathUtils,
+  RepeatWrapping,
+  DoubleSide,
 } from "three";
 import {
   Environment,
@@ -26,25 +35,39 @@ import { LineSegments } from "three";
 import { Edges } from "@react-three/drei";
 
 const Scene = ({ fullTextureUrl, loading, sliderValue }) => {
+  const [texture] = useState(() => {
+    const loader = new TextureLoader();
+    const tex = loader.load(fullTextureUrl);
+    tex.wrapS = tex.wrapT = RepeatWrapping;
+    tex.repeat.set(1, -1);
+
+    return tex;
+  });
+
+  useEffect(() => {
+    texture.offset.set(sliderValue.x, sliderValue.y);
+  }, [texture, sliderValue]);
+  console.log(sliderValue.x);
   const textures = useLoader(TextureLoader, [
     "tshirt/fabric_167_ambientocclusion-4K.png",
     "tshirt/fabric_167_basecolor-4K.png",
     "tshirt/fabric_167_normal-4K.png",
     "tshirt/fabric_167_roughness-4K.png",
   ]);
-  const fullTexture = useTexture(fullTextureUrl);
+
   const material = useMemo(
     () =>
       new MeshStandardMaterial({
-        map: fullTexture,
+        map: texture,
         aoMap: textures[0],
         normalMap: textures[2],
         roughnessMap: textures[3],
         roughness: 0.7,
         metalness: 0.3,
         color: "white",
+        side: DoubleSide,
       }),
-    [textures]
+    [texture, textures]
   );
 
   const material_2 = useMemo(
@@ -83,55 +106,21 @@ const Scene = ({ fullTextureUrl, loading, sliderValue }) => {
     };
   }, [camera]);
 
-  useEffect(() => {
-    if (fullTexture) {
-      fullTexture.wrapS = ClampToEdgeWrapping;
-      fullTexture.wrapT = ClampToEdgeWrapping;
-      fullTexture.minFilter = LinearFilter;
-      fullTexture.magFilter = LinearFilter;
-      fullTexture.needsUpdate = true;
-    }
-  }, [fullTexture]);
-  // Convert slider value (degrees) to radians for rotation
-  const rotationInRadians = MathUtils.degToRad(sliderValue - 180);
-
-  // Set the center of rotation based on your texture's actual center
-  // These values should be adjusted based on the UV mapping
-  const textureCenterX = 0.38; // Adjust if necessary
-  const textureCenterY = 0.4; // Adjust if necessary
-
-  // Set the center of rotation to the middle of the texture
-  fullTexture.center.set(textureCenterX, textureCenterY);
-
-  // Update the texture's rotation
-  fullTexture.rotation = rotationInRadians;
-
-  // Mark the texture for update to apply changes
-  fullTexture.needsUpdate = true;
   return (
     <>
       {loading ? (
         <DynamicFerrofluid />
       ) : (
         <mesh
+          map={texture}
           castShadow
           receiveShadow
           geometry={nodes.T_Shirt_male.geometry}
           material={material}
           scale={[13, 13, 13]}
           position={[0, 0.5, 0]}
-          map={fullTexture}
         ></mesh>
       )}
-      {/* Wireframe Cube surrounding the model */}
-
-      {/* <ContactShadows
-        position={[0, -1.6, 0]}
-        scale={10}
-        blur={1.5}
-        opacity={0.7}
-        far={5}
-      /> */}
     </>
   );
 };
@@ -139,7 +128,7 @@ const Scene = ({ fullTextureUrl, loading, sliderValue }) => {
 const TshirtShowcase = ({ imageUrl, loading, sliderValue }) => {
   const queryParams = new URLSearchParams(window.location.search);
   const imageurl_shopify =
-    imageUrl || queryParams.get("image") || "xamples/za.jpg";
+    imageUrl || queryParams.get("image") || "xamples/va.jpeg";
 
   return (
     <Canvas
