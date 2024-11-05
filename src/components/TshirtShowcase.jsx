@@ -35,19 +35,19 @@ import { LineSegments } from "three";
 import { Edges } from "@react-three/drei";
 
 const Scene = ({ fullTextureUrl, loading, sliderValue }) => {
-  const [texture] = useState(() => {
-    const loader = new TextureLoader();
-    const tex = loader.load(fullTextureUrl);
-    tex.wrapS = tex.wrapT = RepeatWrapping;
-    tex.repeat.set(1, -1);
+  const texture = useLoader(TextureLoader, fullTextureUrl);
 
-    return tex;
-  });
+  // Apply texture settings (wrapping and repetition)
+  useEffect(() => {
+    texture.wrapS = texture.wrapT = RepeatWrapping;
+    texture.repeat.set(1, -1);
+  }, [texture]);
 
+  // Offset adjustment for texture based on sliderValue
   useEffect(() => {
     texture.offset.set(sliderValue.x, sliderValue.y);
   }, [texture, sliderValue]);
-  console.log(sliderValue.x);
+
   const textures = useLoader(TextureLoader, [
     "tshirt/fabric_167_ambientocclusion-4K.png",
     "tshirt/fabric_167_basecolor-4K.png",

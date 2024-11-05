@@ -33,14 +33,14 @@ def generate_images():
         "prompt": f"{input_value} (vector art style), detailed, 8k uhd, high quality, masterpiece, best quality",
         "negative_prompt": "NSFW",
         "steps": 15,
-        "width": 512,
-        "height": 512,
+        "width": 6,
+        "height": 1024,
         "sampler_name": "DDIM",
-        "cfg_scale": 7
+        "cfg_scale": 1.5
     }
     
     # Model options
-    option_payload = {"sd_model_checkpoint": "dreamshaper_5BakedVae.safetensors"}
+    option_payload = {"sd_model_checkpoint": "Juggernaut_RunDiffusionPhoto2_Lightning_4Steps.safetensors"}
     requests.post(url=f'{url}/sdapi/v1/options', json=option_payload)
     response = requests.post(url=f'{url}/sdapi/v1/txt2img', json=payload)
     
